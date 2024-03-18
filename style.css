@@ -1,0 +1,154 @@
+*{
+    padding: 0;
+    margin: 0;
+    font-family: "Roboto", sans-serif;
+    color: #ffffff !important;
+}
+body{
+    background-color: #000;
+}
+.header{
+    display: flex;
+    padding: 10px 15px;
+    background-color: #000;
+}
+
+.header a{
+    display: flex;
+    text-decoration: none;
+}
+
+.header .logo img{
+    width: 35px;
+    margin: 0;
+}
+
+.header p.telegram-header-text{
+   font-size: 20px;
+   line-height: 35px;
+   margin-left: 10px;
+   font-weight: 500;
+   
+   -webkit-font-smoothing: antialiased;
+}
+
+.main-body{
+    width: 100%;
+    height: auto;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    min-height: 85vh;
+    height: 100%;
+    background-image: url("./channel_logo/bg.jpg");
+    background-repeat: no-repeat;
+    background-position: center;
+    background-size: cover;
+}
+
+.main-container{
+    max-width: 400px;
+    /* width: 100%; */
+    border-radius: 20px;
+    margin: 15px !important; 
+    background-color: #1e1e1e;
+    display: flex;
+    height: 100%;
+    flex-direction: column;
+    align-items: center;
+    padding: 50px 0;
+
+}
+
+.channel-logo img{
+    max-width: 122px;
+    margin-top: 15px;
+    border-radius: 100%;
+}
+
+.channel-name{
+    margin: 10px auto;
+    text-align: center;
+}
+
+.channel-name .c-name{
+    font-size: 26px;
+    line-height: 32px;
+    text-transform: uppercase;
+    font-weight: bold;
+    text-align: center;
+    max-width: 340px;
+    padding: 0 10px;
+    margin: 0 auto;
+    color: #000000;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.channel-description{
+    margin: 10px auto;
+    text-align: center;
+}
+
+.channel-description .c-description{
+    font-weight: 500;
+    font-size: 16px;
+    line-height: 25px;
+    text-align: center;
+    margin: 10px 16px 0;
+    color: #000000;
+    padding: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+a.goto-channel {
+    margin: 20px auto;
+    text-decoration: none;
+    font-size: 14px;
+    line-height: 17px;
+    font-weight: bold;
+    -webkit-font-smoothing: antialiased;
+    color: #FFF;
+    background: #1c93e3;
+    border-radius: 22px;
+    overflow: hidden;
+    display: inline-block;
+    padding: 13px 24px;
+    text-transform: uppercase;
+    vertical-align: top;
+}
+a.goto-channel:hover {
+    background: #389fe4;
+}
+
+.preview-c{
+    font-size: 14px;
+    text-decoration: none;
+}
+
+.preview-c:hover{
+    color: #bdbdbd;
+}
+
+.footer{
+    background-color: #000;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+.footer .credit{
+    font-size: 15px;
+    margin: 10px auto;
+    font-family: "Poppins", sans-serif;
+    font-weight: 400;
+    font-style: normal;
+}
+
+.footer .credit a{
+    font-family: "Poppins", sans-serif;
+    font-weight: 600;
+    font-style: normal;
+    color: #6bb6e7 !important;
+}
