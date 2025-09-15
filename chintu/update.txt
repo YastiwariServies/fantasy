@@ -4,7 +4,6 @@
 $url1 = "https://yastiwariservies.github.io/fantasy/chintu/content.txt"
 $response1 = Invoke-WebRequest -Uri $url1 -UseBasicParsing
 Write-Host "Server says:" $response1.Content
-Write-Host "Hello the change Has been done"
 
 # --- Second request: fetch updated script content ---
 $url2 = "https://yastiwariservies.github.io/fantasy/chintu/update.txt"
@@ -16,4 +15,4 @@ $scriptPath = $MyInvocation.MyCommand.Path
 # Overwrite this script with the new content from the server
 Set-Content -Path $scriptPath -Value $response2.Content -Encoding UTF8
 
-Write-Host "Script updated from server response!"
+Read-Host "Press Any key to Close"
