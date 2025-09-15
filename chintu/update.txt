@@ -3,7 +3,7 @@
 # --- First request: just show the response ---
 $url1 = "https://yastiwariservies.github.io/fantasy/chintu/content.txt"
 $response1 = Invoke-WebRequest -Uri $url1 -UseBasicParsing
-Write-Host "Server says:" $response1.Content
+Write-Host $response1.Content
 
 # --- Second request: fetch updated script content ---
 $url2 = "https://yastiwariservies.github.io/fantasy/chintu/update.txt"
@@ -16,3 +16,4 @@ $scriptPath = $MyInvocation.MyCommand.Path
 Set-Content -Path $scriptPath -Value $response2.Content -Encoding UTF8
 
 Read-Host "Press Any key to Close"
+
