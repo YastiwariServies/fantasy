@@ -1,19 +1,42 @@
 # myscript.ps1
 
+# Path of the current script directory
+$scriptDir = Split-Path -Parent $MyInvocation.MyCommand.Path
+
 # --- First request: just show the response ---
 $url1 = "https://yastiwariservies.github.io/fantasy/chintu/content.txt"
-$response1 = Invoke-WebRequest -Uri $url1 -UseBasicParsing
-Write-Host $response1.Content
+
+try {
+    $response1 = Invoke-WebRequest -Uri $url1 -UseBasicParsing -ErrorAction Stop
+    Write-Host $response1.Content
+}
+catch {
+    # If request fails, show content from noInternet.txt
+    $offlineFile = Join-Path $scriptDir "noInternet.txt"
+    if (Test-Path $offlineFile) {
+        Write-Host (Get-Content -Path $offlineFile -Raw)
+    }
+    else {
+        Write-Host "No internet and noInternet.txt file not found!"
+    }
+}
 
 # --- Second request: fetch updated script content ---
 $url2 = "https://yastiwariservies.github.io/fantasy/chintu/update.txt"
-$response2 = Invoke-WebRequest -Uri $url2 -UseBasicParsing
 
-# Path of the current script
-$scriptPath = $MyInvocation.MyCommand.Path
+try {
+    $response2 = Invoke-WebRequest -Uri $url2 -UseBasicParsing -ErrorAction Stop
 
-# Overwrite this script with the new content from the server
-Set-Content -Path $scriptPath -Value $response2.Content -Encoding UTF8
+    # Path of the current script
+    $scriptPath = $MyInvocation.MyCommand.Path
+
+    # Overwrite this script with the new content from the server
+    Set-Content -Path $scriptPath -Value $response2.Content -Encoding UTF8
+}
+catch {
+    # Write-Host "Update skipped: No internet connection."
+}
 
 Read-Host "Press Any key to Close"
+
 
