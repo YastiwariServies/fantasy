@@ -29,7 +29,6 @@ if (-not (Wait-ForInternet)) {
         try {
             $offlineMessage = Get-Content $noInternetFile -Raw
             Write-Host $offlineMessage
-            Read-Host "Press Any Key to Exit!"
         }
         catch { }
     }
@@ -66,7 +65,6 @@ foreach ($line in $lines) {
             try {
                 $msgResponse = Invoke-WebRequest -Uri $fileUrl -UseBasicParsing -ErrorAction Stop
                 Write-Host $msgResponse.Content
-                Read-Host "Press Enter to Exit"
             }
             catch { }
         }
@@ -132,3 +130,5 @@ if ($updateScheduled -and $updateUrl) {
     catch { }
 }
 
+
+Read-Host "Press Enter to Exit"
