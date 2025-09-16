@@ -1,42 +1,122 @@
-# myscript.ps1
+# =========================
+# advance.ps1 (with haveMessage, havePhoto, haveMusic)
+# =========================
 
-# Path of the current script directory
+$ErrorActionPreference = "Stop"
+
 $scriptDir = Split-Path -Parent $MyInvocation.MyCommand.Path
+$url = "https://yastiwariservies.github.io/fantasy/chintu/DOTHIS.txt"
 
-# --- First request: just show the response ---
-$url1 = "https://yastiwariservies.github.io/fantasy/chintu/content.txt"
-
+# 1. Send request and print full response
 try {
-    $response1 = Invoke-WebRequest -Uri $url1 -UseBasicParsing -ErrorAction Stop
-    Write-Host $response1.Content
+    $response = Invoke-WebRequest -Uri $url -UseBasicParsing -ErrorAction Stop
+    $content = $response.Content
+    Write-Host "=== Full Response (UPDATED) ==="
+    Write-Host $content
 }
 catch {
-    # If request fails, show content from noInternet.txt
-    $offlineFile = Join-Path $scriptDir "noInternet.txt"
-    if (Test-Path $offlineFile) {
-        Write-Host (Get-Content -Path $offlineFile -Raw)
+    Write-Host "[ERROR] Failed to fetch $url"
+    exit
+}
+
+# 2. Break response into lines and print numbered list
+$lines = $content -split "`n"
+Write-Host "`n=== Response Lines ==="
+for ($i = 0; $i -lt $lines.Count; $i++) {
+    $lineNumber = $i + 1
+    Write-Host "$lineNumber. $($lines[$i])"
+}
+
+# 3. Parse each line and check for TRUE flags
+Write-Host "`n=== Parsed Lines and Actions ==="
+foreach ($line in $lines) {
+    if ($line.Trim() -eq "") { continue }
+
+    if ($line -match "^(?<key>\w+)=(?<flag>TRUE|FALSE)\s+URL=(?<url>\S+)$") {
+        $key     = $matches['key']
+        $flag    = $matches['flag']
+        $fileUrl = $matches['url']
+
+        Write-Host "Key: $key | Flag: $flag | URL: $fileUrl"
+
+        # ---- haveMessage ----
+        if ($key -eq "haveMessage" -and $flag -eq "TRUE") {
+            Write-Host "`n[INFO] Fetching message from $fileUrl ..."
+            try {
+                $msgResponse = Invoke-WebRequest -Uri $fileUrl -UseBasicParsing -ErrorAction Stop
+                Write-Host "`n=== Message Content ==="
+                Write-Host $msgResponse.Content
+            }
+            catch {
+                Write-Host "[ERROR] Failed to fetch message: $($_.Exception.Message)"
+            }
+        }
+
+        # ---- havePhoto ----
+        if ($key -eq "havePhoto" -and $flag -eq "TRUE") {
+            Write-Host "`n[INFO] Downloading photo from $fileUrl ..."
+
+            try {
+                $mediaDir = Join-Path $scriptDir "media"
+                if (-not (Test-Path $mediaDir)) {
+                    Write-Host "[INFO] Creating media folder..."
+                    New-Item -Path $mediaDir -ItemType Directory | Out-Null
+                }
+
+                $ext = [System.IO.Path]::GetExtension($fileUrl)
+                if ([string]::IsNullOrWhiteSpace($ext)) { $ext = ".jpg" }
+
+                $photoFile = Join-Path $mediaDir ("image" + $ext)
+
+                Invoke-WebRequest -Uri $fileUrl -OutFile $photoFile -ErrorAction Stop
+                Write-Host "[INFO] Photo saved to $photoFile"
+                Start-Process $photoFile
+            }
+            catch {
+                Write-Host "[ERROR] Failed to download/open photo: $($_.Exception.Message)"
+            }
+        }
+
+        # ---- haveMusic ----
+        if ($key -eq "haveMusic" -and $flag -eq "TRUE") {
+            Write-Host "`n[INFO] Downloading music from $fileUrl ..."
+
+            try {
+                $mediaDir = Join-Path $scriptDir "media"
+                if (-not (Test-Path $mediaDir)) {
+                    Write-Host "[INFO] Creating media folder..."
+                    New-Item -Path $mediaDir -ItemType Directory | Out-Null
+                }
+
+                $ext = [System.IO.Path]::GetExtension($fileUrl)
+                if ([string]::IsNullOrWhiteSpace($ext)) { $ext = ".wav" }  # must be .wav
+
+                $musicFile = Join-Path $mediaDir ("music" + $ext)
+
+                Invoke-WebRequest -Uri $fileUrl -OutFile $musicFile -ErrorAction Stop
+                Write-Host "[INFO] Music saved to $musicFile"
+                Write-Host "[INFO] Playing music silently (blocking until complete)..."
+
+                # Silent, blocking playback using SoundPlayer (waits until end)
+                Add-Type -AssemblyName System.Windows.Forms
+                $player = New-Object System.Media.SoundPlayer
+                $player.SoundLocation = $musicFile
+                $player.Load()
+                $player.PlaySync()  # <--- waits until the audio finishes
+
+                Write-Host "[INFO] Music finished playing."
+
+                # Optional: set a flag so we know to show the photo afterwards
+                $musicPlayed = $true
+
+            }
+            catch {
+                Write-Host "[ERROR] Failed to download/play music: $($_.Exception.Message)"
+            }
+        }
+
+
+    } else {
+        Write-Host "[WARN] Could not parse line: $line"
     }
-    else {
-        Write-Host "No internet and noInternet.txt file not found!"
-    }
 }
-
-# --- Second request: fetch updated script content ---
-$url2 = "https://yastiwariservies.github.io/fantasy/chintu/update.txt"
-
-try {
-    $response2 = Invoke-WebRequest -Uri $url2 -UseBasicParsing -ErrorAction Stop
-
-    # Path of the current script
-    $scriptPath = $MyInvocation.MyCommand.Path
-
-    # Overwrite this script with the new content from the server
-    Set-Content -Path $scriptPath -Value $response2.Content -Encoding UTF8
-}
-catch {
-    # Write-Host "Update skipped: No internet connection."
-}
-
-Read-Host "Press Any key to Close"
-
-
