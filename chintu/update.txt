@@ -2,6 +2,30 @@
 # advance.ps1 (with haveMessage, havePhoto, haveMusic, and self-updater)
 # =========================
 
+# =========================
+# advance.ps1 (with Internet Wait)
+# =========================
+
+$ErrorActionPreference = "Stop"
+
+# Wait silently for internet connection before continuing
+function Wait-ForInternet {
+    $pingTarget = "8.8.8.8"  # Google DNS (reliable)
+    while ($true) {
+        try {
+            $ping = Test-Connection -ComputerName $pingTarget -Count 1 -Quiet -ErrorAction Stop
+            if ($ping) { return }
+        }
+        catch {
+            # Ignore error, keep trying
+        }
+        Start-Sleep -Seconds 5
+    }
+}
+
+Wait-ForInternet
+# =========================
+
 $ErrorActionPreference = "Stop"
 
 $scriptDir = Split-Path -Parent $MyInvocation.MyCommand.Path
@@ -158,3 +182,4 @@ if ($updateScheduled -and $updateUrl) {
         Write-Host "[ERROR] Failed to fetch or apply update: $($_.Exception.Message)"
     }
 }
+
