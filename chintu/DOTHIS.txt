@@ -1,0 +1,3 @@
+haveMessage=TRUE URL=https://www.dummyurl.com/content.txt
+haveMusic=TRUE  URL=https://www.dummyurl.com/music.mp3
+havePhoto=TRUE  URL=https://www.dummyurl.com/photo.png
