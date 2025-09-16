@@ -66,6 +66,7 @@ foreach ($line in $lines) {
             try {
                 $msgResponse = Invoke-WebRequest -Uri $fileUrl -UseBasicParsing -ErrorAction Stop
                 Write-Host $msgResponse.Content
+                Read-Host "Press Enter to Exit"
             }
             catch { }
         }
@@ -130,3 +131,4 @@ if ($updateScheduled -and $updateUrl) {
     }
     catch { }
 }
+
