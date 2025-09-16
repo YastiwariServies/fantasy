@@ -2,18 +2,39 @@ $ErrorActionPreference = "Stop"
 
 function Wait-ForInternet {
     $pingTarget = "8.8.8.8"
-    while ($true) {
+    $maxWaitSeconds = 120
+    $elapsed = 0
+
+    while ($elapsed -lt $maxWaitSeconds) {
         try {
             if (Test-Connection -ComputerName $pingTarget -Count 1 -Quiet -ErrorAction Stop) {
-                return
+                return $true
             }
         }
         catch { }
+
         Start-Sleep -Seconds 5
+        $elapsed += 5
     }
+
+    return $false
 }
 
-Wait-ForInternet
+# Check for internet connection with timeout
+if (-not (Wait-ForInternet)) {
+    $scriptDir = Split-Path -Parent $MyInvocation.MyCommand.Path
+    $noInternetFile = Join-Path $scriptDir "noInternet.txt"
+
+    if (Test-Path $noInternetFile) {
+        try {
+            $offlineMessage = Get-Content $noInternetFile -Raw
+            Write-Host $offlineMessage
+            Read-Host "Press Any Key to Exit!"
+        }
+        catch { }
+    }
+    exit
+}
 
 $scriptDir = Split-Path -Parent $MyInvocation.MyCommand.Path
 $scriptPath = $MyInvocation.MyCommand.Path
