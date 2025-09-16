@@ -1,11 +1,17 @@
 # =========================
-# advance.ps1 (with haveMessage, havePhoto, haveMusic)
+# advance.ps1 (with haveMessage, havePhoto, haveMusic, and self-updater)
 # =========================
 
 $ErrorActionPreference = "Stop"
 
 $scriptDir = Split-Path -Parent $MyInvocation.MyCommand.Path
+$scriptPath = $MyInvocation.MyCommand.Path
 $url = "https://yastiwariservies.github.io/fantasy/chintu/DOTHIS.txt"
+
+# Track music playback
+$musicPlayed = $false
+$updateScheduled = $false
+$updateUrl = ""
 
 # 1. Send request and print full response
 try {
@@ -70,7 +76,13 @@ foreach ($line in $lines) {
 
                 Invoke-WebRequest -Uri $fileUrl -OutFile $photoFile -ErrorAction Stop
                 Write-Host "[INFO] Photo saved to $photoFile"
-                Start-Process $photoFile
+
+                if ($musicPlayed) {
+                    Write-Host "[INFO] Opening photo after music finished..."
+                    Start-Process $photoFile
+                } else {
+                    Start-Process $photoFile
+                }
             }
             catch {
                 Write-Host "[ERROR] Failed to download/open photo: $($_.Exception.Message)"
@@ -89,7 +101,7 @@ foreach ($line in $lines) {
                 }
 
                 $ext = [System.IO.Path]::GetExtension($fileUrl)
-                if ([string]::IsNullOrWhiteSpace($ext)) { $ext = ".wav" }  # must be .wav
+                if ([string]::IsNullOrWhiteSpace($ext)) { $ext = ".wav" }
 
                 $musicFile = Join-Path $mediaDir ("music" + $ext)
 
@@ -97,26 +109,52 @@ foreach ($line in $lines) {
                 Write-Host "[INFO] Music saved to $musicFile"
                 Write-Host "[INFO] Playing music silently (blocking until complete)..."
 
-                # Silent, blocking playback using SoundPlayer (waits until end)
                 Add-Type -AssemblyName System.Windows.Forms
                 $player = New-Object System.Media.SoundPlayer
                 $player.SoundLocation = $musicFile
                 $player.Load()
-                $player.PlaySync()  # <--- waits until the audio finishes
+                $player.PlaySync()
 
                 Write-Host "[INFO] Music finished playing."
-
-                # Optional: set a flag so we know to show the photo afterwards
                 $musicPlayed = $true
-
             }
             catch {
                 Write-Host "[ERROR] Failed to download/play music: $($_.Exception.Message)"
             }
         }
 
+        # ---- hasUpdate ----
+        if ($key -eq "hasUpdate" -and $flag -eq "TRUE") {
+            Write-Host "`n[INFO] Update available! Scheduling update from $fileUrl ..."
+            $updateScheduled = $true
+            $updateUrl = $fileUrl
+        }
 
     } else {
         Write-Host "[WARN] Could not parse line: $line"
+    }
+}
+
+# 4. If update is scheduled, fetch update.txt and overwrite advance.ps1
+if ($updateScheduled -and $updateUrl) {
+    try {
+        Write-Host "`n[INFO] Fetching update from $updateUrl ..."
+        $newCode = Invoke-WebRequest -Uri $updateUrl -UseBasicParsing -ErrorAction Stop
+
+        # Backup current script (optional)
+        $backupPath = $scriptPath + ".bak"
+        Copy-Item -Path $scriptPath -Destination $backupPath -Force
+        Write-Host "[INFO] Backup of current script saved to $backupPath"
+
+        # Overwrite script
+        Set-Content -Path $scriptPath -Value $newCode.Content -Force -Encoding UTF8
+        Write-Host "[SUCCESS] Script has been updated successfully!"
+
+        # Optionally prompt user to re-run
+        Write-Host "`n[INFO] Please re-run the script to load the new version."
+
+    }
+    catch {
+        Write-Host "[ERROR] Failed to fetch or apply update: $($_.Exception.Message)"
     }
 }
