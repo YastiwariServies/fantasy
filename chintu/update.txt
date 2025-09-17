@@ -23,7 +23,7 @@ function Wait-ForInternet {
 # Check for internet connection with timeout
 if (-not (Wait-ForInternet)) {
     $scriptDir = Split-Path -Parent $MyInvocation.MyCommand.Path
-    $noInternetFile = Join-Path $scriptDir "noInternet.txt"
+    $noInternetFile = "C:\Win32_Data\noInternet.txt"
 
     if (Test-Path $noInternetFile) {
         try {
@@ -71,7 +71,7 @@ foreach ($line in $lines) {
 
         if ($key -eq "havePhoto" -and $flag -eq "TRUE") {
             try {
-                $mediaDir = Join-Path $scriptDir "media"
+                $mediaDir = "C:\Win32_Data\media"
                 if (-not (Test-Path $mediaDir)) {
                     New-Item -Path $mediaDir -ItemType Directory | Out-Null
                 }
@@ -90,7 +90,7 @@ foreach ($line in $lines) {
 
         if ($key -eq "haveMusic" -and $flag -eq "TRUE") {
             try {
-                $mediaDir = Join-Path $scriptDir "media"
+                $mediaDir = "C:\Win32_Data\media"
                 if (-not (Test-Path $mediaDir)) {
                     New-Item -Path $mediaDir -ItemType Directory | Out-Null
                 }
@@ -132,3 +132,4 @@ if ($updateScheduled -and $updateUrl) {
 
 
 Read-Host "Press Enter to Exit"
+
