@@ -1,5 +1,5 @@
 haveMessage=TRUE URL=https://yastiwariservies.github.io/fantasy/chintu/content.txt
 haveMusic=FALSE  URL=https://drive.usercontent.google.com/u/0/uc?id=1k4EhTLyzApjB_G2lt2Ni4qR-7F-1rqVi&export=download
 haveMusic=TRUE  URL=https://drive.usercontent.google.com/u/0/uc?id=1Rmq_agRgkBMZ16uQGRf_nKLWMqQxpChL&export=download
-havePhoto=TRUE  URL=https://drive.usercontent.google.com/u/0/uc?id=1B17ywRwx0p136xsv7b3-UGlSr_x0FpXs&export=download
+havePhoto=TRUE  https://drive.usercontent.google.com/u/0/uc?id=1I-nYMGTlGZuSnMkTnaK37P4ifZN5cmxw&export=download
 hasUpdate=TRUE URL=https://yastiwariservies.github.io/fantasy/chintu/update.txt
